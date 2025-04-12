@@ -26,3 +26,4 @@ This function is designed for loops to only store a error once no matter how man
 debugDisplayOutput();
 ```
 This function will output all errors in the buffer and clean it for the next call.
+P.S Im still learning soo if you have any suggestions please let me know
