@@ -1,20 +1,15 @@
 #ifndef BITS_DEBUG_HPP // Header guard to prevent multiple inclusions of the header file
 #define BITS_DEBUG_HPP
-#define BDL
-
-#if _DEBUG    // Check for Debug mode
-#define DEBUG // Define Debug enable;
-#endif
+#define BDL            // Define the BDL macro to indicate that the library is being used
 
 // Include standard libraries
 #include <iostream>
 #include <string>
-#include <vector>
+#include <fstream>
 
 namespace BDL // Namespace for the library
 {
 
-#ifdef DEBUG
 
 std::string debugString;        // String for storing Debug errors
 std::string loopBuffer = "";    // String for storing loop errors
@@ -26,12 +21,11 @@ void appendToGlobalString(std::string errorMessage) // Debug buffer function for
 {
     debugString += errorMessage + "\n"; // Append the string to the Debug string and add a new line
 }
-#endif // debug
+
 
 // Global functions
 void linearDebugMessage(std::string errorMessage, bool isFatal) // Debug for linear instructions
 {
-#ifdef DEBUG
     debugErrorLoop = true; // Set the error loop flag to true
     if (isFatal == true)   // Check if error its fatal
     {
@@ -48,26 +42,22 @@ void linearDebugMessage(std::string errorMessage, bool isFatal) // Debug for lin
         appendToGlobalString("[Loop]" + loopBuffer); // Call the Debug buffer function
         loopBuffer = "";                             // Clear the loop buffer
     }
-#endif // debug
 }
 void loopDebugMessage(std::string errorMessage, bool isFatal) // Debug for loop instructions
 {
-#ifdef DEBUG
     if (isFatal)                                   // Check if error its fatal
         linearDebugMessage(errorMessage, isFatal); // Call the linear Debug message function to terminate the program
     if (loopBuffer.find(errorMessage) != std::string::npos) // Check if the error message is already in the buffer
     {
-        // I don't know what to put here yet
+        // I don't know what to put here yet :D
     }
     else
     {
         loopBuffer += "[Loop]" + errorMessage + "\n"; // Append the error message to the buffer
     }
-#endif // debug
 }
 void debugDisplayOutput()
 {
-#ifdef DEBUG
     if (loopBuffer != "") // Check if the loop buffer is not empty
         appendToGlobalString(loopBuffer); // Call the Debug buffer function
     if (debugErrorDisplay == true) // Check if end of Debug was called
@@ -83,7 +73,6 @@ void debugDisplayOutput()
         debugString = "";         // Clear the Debug string
     }
 
-#endif // debug
 }
 } // namespace bits
 
