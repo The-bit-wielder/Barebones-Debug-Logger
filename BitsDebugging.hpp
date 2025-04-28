@@ -1,5 +1,6 @@
 #ifndef BITS_DEBUG_HPP // Header guard to prevent multiple inclusions of the header file
 #define BITS_DEBUG_HPP
+#define BDL
 
 #if _DEBUG    // Check for Debug mode
 #define DEBUG // Define Debug enable;
