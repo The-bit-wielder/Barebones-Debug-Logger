@@ -10,7 +10,7 @@
 #include <string>
 #include <vector>
 
-namespace bits // Namespace for the library
+namespace BDL // Namespace for the library
 {
 
 #ifdef DEBUG
