@@ -72,6 +72,11 @@ void debugDisplayOutput()
                   << debugString; // Print the Debug errors message
         debugString = "";         // Clear the Debug string
     }
+    //Function to clear the string manualy , only use it in special cases as debug display already doese that
+    void clearDebug(){
+        debugString=""; 
+        linearDebugMessage("Debug cleared manualy.Keep in mind that output functions already do that.",false)
+    }
 
 }
 } // namespace bits
