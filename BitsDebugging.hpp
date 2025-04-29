@@ -6,6 +6,7 @@
 #include <iostream>
 #include <string>
 #include <fstream>
+#include <cmath>
 
 namespace BDL // Namespace for the library
 {
@@ -13,20 +14,49 @@ namespace BDL // Namespace for the library
 
 std::string debugString;        // String for storing Debug errors
 std::string loopBuffer = "";    // String for storing loop errors
-bool debugErrorLoop = false;    // Flag for error thrown in while loops
-bool debugErrorThrown = false;  // Flag for error thrown in while loops
+std::string logName = "latest.log";       // String for storing the log file name
 bool debugErrorDisplay = false; // Flag for error displayed
+bool autoOutputDebug = false;        // Flag for auto display
+bool fileOutputDebug = false;        // Flag for file output
+u_int16_t debugErrorCount = 0;    // Counter for Debug errors
+u_int16_t debugErrorCountMax = (1 << (sizeof(debugErrorCount) * 8)) - 1; // Set the default max number of debug errors to store
+
+void setParams(bool consoleOut , bool fileOut,std::string logFileName, bool autoOutput,u_int16_t autoOutputInterval) // Function to set parameters for Debug output
+{
+    // Set the parameters for Debug output
+    if (consoleOut == true) // Check if console output is enabled
+    {
+        linearDebugMessage << "Console output enabled.\n"; // Print message to console
+    }
+    if (fileOut == true) // Check if file output is enabled
+    {
+        logName=logFileName; // Set the log file name
+        std::ofstream file(logName); // Open file for writing
+    }
+    if (autoOutput) // Check if auto output is enabled
+    {
+        linearDebugMessage << "Auto output enabled. Interval: " << autoOutputInterval << "\n"; // Print message to console
+        autoOutputDebug = true; // Set the auto display flag to true
+    }
+}
 
 void appendToGlobalString(std::string errorMessage) // Debug buffer function for storing Debug errors (don't use it)
 {
+    debugErrorCount++; // Increment the Debug error counter
     debugString += errorMessage + "\n"; // Append the string to the Debug string and add a new line
+    if (debugErrorCount > debugErrorCountMax && autoOutputDebug) // Check if the Debug error counter exceeds the error count limit
+    {
+
+        debugErrorCount = 0; // Reset the Debug error counter
+    }
+    
+
 }
 
 
 // Global functions
 void linearDebugMessage(std::string errorMessage, bool isFatal) // Debug for linear instructions
 {
-    debugErrorLoop = true; // Set the error loop flag to true
     if (isFatal == true)   // Check if error its fatal
     {
         appendToGlobalString("[Fatal]" + errorMessage); // Call the Debug buffer function
@@ -78,7 +108,18 @@ void debugDisplayOutput()
         linearDebugMessage("Debug cleared manualy.Keep in mind that output functions already do that.",false)
     }
 
+    void debugFileOutput(){
+        if(!fileOutputDebug){
+        std::ofstream file("debug_output.txt"); // Open file for writing
+        file << "List of all caught errors:\n" << debugString; // Print the Debug errors message to the file
+        file.close(); // Close the file
+    }
+    else
+    {
+        //Add code here
+    }
+    }
 }
-} // namespace bits
+} // namespace BDL
 
 #endif // BITS_DEBUG_HPP
