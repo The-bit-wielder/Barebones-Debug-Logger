@@ -114,6 +114,11 @@ namespace BDL // Namespace for the library
         if (!fileOutputDebug)
         {
             std::ofstream file(logName); // Open file for writing
+            if (!file.is_open())
+            {
+                std::cerr << "Error opening file for writing: " << logName << "\n"; // Print error message if file cannot be opened
+                return; // Exit the function if file cannot be opened
+            }
             file << "List of all caught errors:\n"
                  << debugString; // Print the Debug errors message to the file
             file.close();        // Close the file
