@@ -13,12 +13,12 @@ namespace BDL // Namespace for the library
 
     std::string debugString;                                                 // String for storing Debug errors
     std::string loopBuffer = "";                                             // String for storing loop errors
-    std::string logName;                                   // String for storing the log file name
+    std::string logName;                                                     // String for storing the log file name
     bool debugErrorDisplay = false;                                          // Flag for error displayed
     bool autoOutputDebug = false;                                            // Flag for auto display
     bool fileOutputDebug = false;                                            // Flag for file output
-    bool enableConsoleOutput = true;                                          // Flag for console output
-    bool enableFileOutput = false;                                            // Flag for file output
+    bool enableConsoleOutput = true;                                         // Flag for console output
+    bool enableFileOutput = false;                                           // Flag for file output
     u_int16_t debugErrorCount = 0;                                           // Counter for Debug errors
     u_int16_t debugErrorCountMax = (1 << (sizeof(debugErrorCount) * 8)) - 1; // Set the default max number of debug errors to store
 
@@ -43,15 +43,15 @@ namespace BDL // Namespace for the library
         }
         else
         {
-            appendToGlobalString("[Warn]" + errorMessage); // Call the Debug buffer function
+            appendToGlobalString("[Error]" + errorMessage); // Call the Debug buffer function
         }
         if (loopBuffer != "")
         {
-            appendToGlobalString("[Loop]" + loopBuffer); // Call the Debug buffer function
-            loopBuffer = "";                             // Clear the loop buffer
+            appendToGlobalString("[Loop Error]" + loopBuffer); // Call the Debug buffer function
+            loopBuffer = "";                                   // Clear the loop buffer
         }
     }
-    void loopDebugMessage(std::string errorMessage,int maxLoopAllowance ,bool shouldTerminate, bool isFatal) // Debug for loop instructions
+    void loopDebugMessage(std::string errorMessage, int maxLoopAllowance, bool shouldTerminate, bool isFatal) // Debug for loop instructions
     {
         if (isFatal)                                            // Check if error its fatal
             linearDebugMessage(errorMessage, isFatal);          // Call the linear Debug message function to terminate the program
@@ -68,6 +68,10 @@ namespace BDL // Namespace for the library
     {
         appendToGlobalString("[Info]" + errorMessage); // Call the Debug buffer function
     }
+    void warningDebugMessage(std::string errorMessage) // Debug for warning instructions
+    {
+        appendToGlobalString("[Warn]" + errorMessage); // Call the Debug buffer function
+    }
     void paramOutput() // Function to output the parameters for Debug output
     {
         std::cerr << "Console output: " << (enableConsoleOutput ? "enabled" : "disabled") << "\n"
@@ -75,7 +79,7 @@ namespace BDL // Namespace for the library
                   << "Log file name: " << logName << "\n"
                   << "Auto output: " << (autoOutputDebug ? "enabled" : "disabled") << "\n"; // Print the parameters to console
     }
-    void output() // Function to output the Debug errors
+    void outputDebug() // Function to output the Debug errors
     {
         if (enableConsoleOutput) // Check if console output is enabled
         {
@@ -85,7 +89,7 @@ namespace BDL // Namespace for the library
         {
             debugFileOutput(); // Call the Debug file output function
         }
-        debugString = ""; // Clear the Debug string
+        debugString = "";    // Clear the Debug string
         debugErrorCount = 0; // Reset the Debug error counter
     }
     void debugDisplayOutput()
