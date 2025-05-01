@@ -18,8 +18,8 @@ namespace BDL // Namespace for the library
     bool fileOutputDebug = false;       // Flag for file output
     bool enableConsoleOutput = true;    // Flag for console output
     bool enableFileOutput = false;      // Flag for file output
-    u_int16_t debugErrorCount = 0;      // Counter for Debug errors
-    u_int16_t debugErrorCountMax = 255; // Set the default max number of debug errors to store
+    unsigned short debugErrorCount = 0;      // Counter for Debug errors
+    unsigned short debugErrorCountMax = 255; // Set the default max number of debug errors to store
 
     void appendToGlobalString(std::string errorMessage) // Debug buffer function for storing Debug errors (don't use it)
     {
