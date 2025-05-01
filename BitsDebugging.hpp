@@ -6,7 +6,6 @@
 #include <iostream>
 #include <string>
 #include <fstream>
-#include <cmath>
 
 namespace BDL // Namespace for the library
 {
