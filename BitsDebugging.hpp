@@ -6,6 +6,7 @@
 #include <iostream>
 #include <string>
 #include <fstream>
+#include <cstdlib>
 
 namespace BDL // Namespace for the library
 {
@@ -55,6 +56,7 @@ namespace BDL // Namespace for the library
         {
             appendToGlobalString("[Fatal]:" + errorMessage); // Call the Debug buffer function
             outputDebug(); // Call the Debug output function to display the errors
+            std::exit(EXIT_FAILURE); // Exit the program with failure status
         } 
         else
         {
