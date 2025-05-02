@@ -11,14 +11,14 @@
 namespace BDL // Namespace for the library
 {
 
-    std::string debugString;            // String for storing Debug errors
-    std::string loopBuffer = "";        // String for storing loop errors
-    std::string logName;                // String for storing the log file name
-    bool debugErrorDisplay = false;     // Flag for error displayed
-    bool autoOutputDebug = true;        // Flag for auto display
-    bool fileOutputDebug = false;       // Flag for file output
-    bool enableConsoleOutput = true;    // Flag for console output
-    bool enableFileOutput = false;      // Flag for file output
+    std::string debugString;                 // String for storing Debug errors
+    std::string loopBuffer = "";             // String for storing loop errors
+    std::string logName;                     // String for storing the log file name
+    bool debugErrorDisplay = false;          // Flag for error displayed
+    bool autoOutputDebug = true;             // Flag for auto display
+    bool fileOutputDebug = false;            // Flag for file output
+    bool enableConsoleOutput = true;         // Flag for console output
+    bool enableFileOutput = false;           // Flag for file output
     unsigned short debugErrorCount = 0;      // Counter for Debug errors
     unsigned short debugErrorCountMax = 255; // Set the default max number of debug errors to store
 
@@ -62,9 +62,9 @@ namespace BDL // Namespace for the library
         if (isFatal == true) // Check if error its fatal
         {
             appendToGlobalString("[Fatal]:" + errorMessage); // Call the Debug buffer function
-            outputDebug(); // Call the Debug output function to display the errors
-            std::exit(EXIT_FAILURE); // Exit the program with failure status
-        } 
+            outputDebug();                                   // Call the Debug output function to display the errors
+            std::exit(EXIT_FAILURE);                         // Exit the program with failure status
+        }
         else
         {
             appendToGlobalString("[Error]:" + errorMessage); // Call the Debug buffer function
@@ -72,12 +72,12 @@ namespace BDL // Namespace for the library
     }
     void loopDebugMessage(std::string errorMessage, bool isFatal) // Debug for loop instructions
     {
-        if (isFatal)                                            // Check if error its fatal
-            linearDebugMessage("[Loop]:"+ errorMessage, isFatal);          // Call the linear Debug message function to terminate the program
-        if (loopBuffer.find(errorMessage) == std::string::npos) // Check if the error message is already in the buffer
+        if (isFatal)                                               // Check if error its fatal
+            linearDebugMessage("[Loop]:" + errorMessage, isFatal); // Call the linear Debug message function to terminate the program
+        if (loopBuffer.find(errorMessage) == std::string::npos)    // Check if the error message is already in the buffer
         {
             linearDebugMessage("[Loop]:" + errorMessage, false); // Call the linear Debug message function to store the error message
-            loopBuffer += errorMessage + "\n";                  // Append the error message to the loop buffer
+            loopBuffer += errorMessage + "\n";                   // Append the error message to the loop buffer
         }
     }
     void infoDebugMessage(std::string errorMessage) // Debug for info instructions
@@ -136,11 +136,15 @@ namespace BDL // Namespace for the library
             if (!file.is_open())
             {
                 std::cerr << "Error opening file for writing: " << logName << "\n"; // Print error message if file cannot be opened
-                return;                                                             // Exit the function if file cannot be opened
+                debugConsoleOutput(true);                                           // Call the Debug display function to show the error message
             }
-            file << "List of all caught errors:\n"
-                 << debugString; // Print the Debug errors message to the file
-            file.close();        // Close the file
+            else
+            {
+                file << "List of all caught errors:\n"
+                     << debugString; // Print the Debug errors message to the file
+                file.close();        // Close the file
+                fileOutputDebug = true; // Set the file output flag to true
+            }
         }
         else
         {
