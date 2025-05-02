@@ -41,7 +41,14 @@ namespace BDL // Namespace for the library
         }
         if (fileOut == true) // Check if file output is enabled
         {
-            logName = logFileName;       // Set the log file name
+            if (logFileName == "") // Check if log file name is empty
+            {
+                logName = "debug.log"; // Set the default log file name
+            }
+            else
+            {
+                logName = logFileName; // Set the log file name
+            }
             std::ofstream file(logName); // Open file for writing
         }
         if (autoOutput) // Check if auto output is enabled
