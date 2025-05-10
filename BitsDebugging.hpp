@@ -164,6 +164,14 @@ namespace BDL // Namespace for the library
         debugString = "";
         warningDebugMessage("Debug cleared manually. Keep in mind that output function already does that.");
     }
+    void testDebug()
+    {
+        linearDebugMessage("Test debug message", false); // Call the linear Debug message function to test the library
+        loopDebugMessage("Test loop debug message", false); // Call the loop Debug message function to test the library
+        infoDebugMessage("Test info debug message"); // Call the info Debug message function to test the library
+        warningDebugMessage("Test warning debug message"); // Call the warning Debug message function to test the library
+        paramOutput(); // Call the parameter output function to display the parameters
+    }
 } // namespace BDL
 
 #endif // BITS_DEBUG_HPP
