@@ -204,6 +204,7 @@ namespace BDL
         warningDebugMessage("Test warning debug message"); 
         paramOutput(); 
     }
+
 } // namespace BDL
 
 #endif // BITS_DEBUG_HPP
