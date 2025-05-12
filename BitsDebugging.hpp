@@ -22,155 +22,187 @@ namespace BDL
     unsigned short debugErrorCount = 0;      
     unsigned short debugErrorCountMax = 255; 
 
-    void appendToGlobalString(std::string errorMessage) // Debug buffer function for storing Debug errors (don't use it)
+    void appendToGlobalString(std::string& errorMessage) 
     {
-        debugErrorCount++;                                           // Increment the Debug error counter
-        debugString += errorMessage + "\n";                          // Append the string to the Debug string and add a new line
-        if (debugErrorCount > debugErrorCountMax && autoOutputDebug) // Check if the Debug error counter exceeds the error count limit
+        debugErrorCount++;                                           
+        debugString += errorMessage + "\n";                          
+        if (debugErrorCount > debugErrorCountMax && autoOutputDebug) 
         {
-            outputDebug();       // Call the Debug output function to display the errors
-            debugErrorCount = 0; // Reset the Debug error counter
+            outputDebug();       
+            debugErrorCount = 0; 
         }
     }
-    void setParams(bool consoleOut, bool fileOut, std::string logFileName, bool autoOutput, u_int16_t autoOutputInterval) // Function to set parameters for Debug output
+	/// This function will set the parameters for the debugging system.
+	/// @param name="consoleOut" This will enable or disable console output.
+	/// @param name="fileOut" This will enable or disable file output.
+	/// @param name="logFileName" This is the name of the log file that will be created.
+	/// @param name="autoOutput" This will enable or disable auto output.
+	/// @param name="autoOutputInterval" This is the interval for auto output in seconds.
+    void setParams(bool consoleOut, bool fileOut, std::string logFileName, bool autoOutput, u_int16_t autoOutputInterval) 
     {
-        // Set the parameters for Debug output
-        if (consoleOut == true) // Check if console output is enabled
+        
+        if (consoleOut == true) 
         {
-            linearDebugMessage("Console output enabled.\n", false); // Print message to console
+            linearDebugMessage("Console output enabled.\n", false); 
         }
-        if (fileOut == true) // Check if file output is enabled
+        if (fileOut == true) 
         {
-            if (logFileName == "") // Check if log file name is empty
+            if (logFileName == "")
             {
-                logName = "debug.log"; // Set the default log file name
+                logName = "debug.log"; 
             }
             else
             {
-                logName = logFileName; // Set the log file name
+                logName = logFileName; 
             }
-            std::ofstream file(logName); // Open file for writing
+            std::ofstream file(logName); 
         }
-        if (autoOutput) // Check if auto output is enabled
+        if (autoOutput) 
         {
-            linearDebugMessage("Auto output enabled. Interval: " + std::to_string(autoOutputInterval) + "\n", false); // Print message to console
-            autoOutputDebug = true;                                                                                   // Set the auto display flag to true
+            linearDebugMessage("Auto output enabled. Interval: " + std::to_string(autoOutputInterval) + "\n", false); 
+            autoOutputDebug = true;                                                                                   
         }
     }
-    void linearDebugMessage(std::string errorMessage, bool isFatal) // Debug for linear instructions
+	/// This function will output a message to the console and/or file.
+	/// @param name="errorMessage" This is the message that will be outputted.
+	/// @param name="isFatal" This will determine if the message is fatal or not.
+    void linearDebugMessage(std::string errorMessage, bool isFatal) 
     {
-        if (isFatal == true) // Check if error its fatal
+        if (isFatal == true) 
         {
-            appendToGlobalString("[Fatal]:" + errorMessage); // Call the Debug buffer function
-            outputDebug();                                   // Call the Debug output function to display the errors
-            std::exit(EXIT_FAILURE);                         // Exit the program with failure status
+            appendToGlobalString("[Fatal]:" + errorMessage); 
+            outputDebug();                                   
+            std::exit(EXIT_FAILURE);                         
         }
         else
         {
-            appendToGlobalString("[Error]:" + errorMessage); // Call the Debug buffer function
+            appendToGlobalString("[Error]:" + errorMessage); 
         }
     }
-    void loopDebugMessage(std::string errorMessage, bool isFatal) // Debug for loop instructions
+	/// This function will output a message to the console and/or file.
+	/// This function will also check if the message is already in the buffer.
+	/// @param name="errorMessage" This is the message that will be outputted.
+	/// @param name="isFatal" This will determine if the message is fatal or not.
+    void loopDebugMessage(std::string errorMessage, bool isFatal) 
     {
-        if (isFatal)                                               // Check if error its fatal
-            linearDebugMessage("[Loop]:" + errorMessage, isFatal); // Call the linear Debug message function to terminate the program
-        if (loopBuffer.find(errorMessage) == std::string::npos)    // Check if the error message is already in the buffer
+        if (isFatal)                                               
+            linearDebugMessage("[Loop]:" + errorMessage, isFatal); 
+        if (loopBuffer.find(errorMessage) == std::string::npos)    
         {
-            linearDebugMessage("[Loop]:" + errorMessage, false); // Call the linear Debug message function to store the error message
-            loopBuffer += errorMessage + "\n";                   // Append the error message to the loop buffer
+            linearDebugMessage("[Loop]:" + errorMessage, false); 
+            loopBuffer += errorMessage + "\n";                   
         }
     }
-    void infoDebugMessage(std::string errorMessage) // Debug for info instructions
+	/// This function will output an info message to the console and/or file.
+	/// @param name="errorMessage" This is the message that will be outputted.
+    void infoDebugMessage(std::string errorMessage) 
     {
-        appendToGlobalString("[Info]:" + errorMessage); // Call the Debug buffer function
+        appendToGlobalString("[Info]:" + errorMessage); 
     }
-    void warningDebugMessage(std::string errorMessage) // Debug for warning instructions
+	/// This function will output a warning message to the console and/or file.
+	/// @param name="errorMessage" This is the message that will be outputted.
+    void warningDebugMessage(std::string errorMessage) 
     {
-        appendToGlobalString("[Warn]:" + errorMessage); // Call the Debug buffer function
+        appendToGlobalString("[Warn]:" + errorMessage); 
     }
-    void paramOutput() // Function to output the parameters for Debug output
+	///This function will output the current parameters of the debugging system to the console.
+    void paramOutput() 
     {
         std::cerr << "Console output: " << (enableConsoleOutput ? "enabled" : "disabled") << "\n"
                   << "File output: " << (enableFileOutput ? "enabled" : "disabled") << "\n"
                   << "Log file name: " << logName << "\n"
-                  << "Auto output: " << (autoOutputDebug ? "enabled" : "disabled") << "\n"; // Print the parameters to console
+                  << "Auto output: " << (autoOutputDebug ? "enabled" : "disabled") << "\n"; 
     }
-    void outputDebug() // Function to output the Debug errors
+	/// This function will output the debug string to the console and/or file.
+	/// It will also clear the debug string after outputting to console and/or file.
+	/// To configure the output method, use setParams() function.
+	/// By default it will output to the console.
+    void outputDebug() 
     {
-        if (enableConsoleOutput) // Check if console output is enabled
+        if (enableConsoleOutput) 
         {
-            debugConsoleOutput(false); // Call the Debug display function
+            debugConsoleOutput(false); 
         }
-        if (enableFileOutput) // Check if file output is enabled
+        if (enableFileOutput) 
         {
-            debugFileOutput(false); // Call the Debug file output function
+            debugFileOutput(false); 
         }
-        debugString = "";    // Clear the Debug string
-        debugErrorCount = 0; // Reset the Debug error counter
+        debugString = "";    
+        debugErrorCount = 0; 
     }
+	/// This function will output the debug string to the console.
+	/// This is the default output method used by the debugging system.
+	/// Its also considered a fallback method if the file output fails.
+	/// @param name="eraseString" This will erase the debug string after outputting to console.
     void debugConsoleOutput(bool eraseString)
     {
-        if (loopBuffer != "")                 // Check if the loop buffer is not empty
-            appendToGlobalString(loopBuffer); // Call the Debug buffer function
-        if (debugErrorDisplay == true)        // Check if end of Debug was called
+        if (loopBuffer != "")                 
+            appendToGlobalString(loopBuffer); 
+        if (debugErrorDisplay == true)       
         {
             std::cerr << "List of all new errors since last display call:\n"
-                      << debugString; // Print the end error message
+                      << debugString; 
         }
         else
         {
-            debugErrorDisplay = true; // Set the Debug display flag to true
+            debugErrorDisplay = true; 
             std::cerr << "Debug display called. List of all caught errors:\n"
-                      << debugString; // Print the Debug errors message
+                      << debugString; 
         }
-        if (eraseString) // Check if the string should be erased
+        if (eraseString)
         {
-            debugString = ""; // Clear the Debug string
+            debugString = ""; 
         }
     }
+	/// This function will output the debug string to a file.
+	/// To use this function though outputDebug() must first set fileOutputDebug to true.
+	/// Can also be called manualy to output the debug string to a file.
+	/// @param name="eraseString" If true the debug string will be erased after outputting to file.
     void debugFileOutput(bool eraseString)
     {
         if (!fileOutputDebug)
         {
-            std::ofstream file(logName); // Open file for writing
+            std::ofstream file(logName); 
             if (!file.is_open())
             {
-                std::cerr << "Error opening file for writing: " << logName << "\n"; // Print error message if file cannot be opened
-                debugConsoleOutput(true);                                           // Call the Debug display function to show the error message
+                std::cerr << "Error opening file for writing: " << logName << "\n"; 
+                debugConsoleOutput(true);                                           
             }
             else
             {
                 file << "List of all caught errors:\n"
-                     << debugString; // Print the Debug errors message to the file
-                file.close();        // Close the file
-                fileOutputDebug = true; // Set the file output flag to true
+                     << debugString; 
+                file.close();        
+                fileOutputDebug = true; 
             }
         }
         else
         {
-            std::ofstream file(logName, std::ios::app); // Open file for appending
+            std::ofstream file(logName, std::ios::app);
             file << "List of all new caught errors since last call:\n"
-                 << debugString; // Print the Debug errors message to the file
+                 << debugString; 
         }
-        if (eraseString) // Check if the string should be erased
+        if (eraseString) 
         {
-            debugString = ""; // Clear the Debug string
+            debugString = ""; 
         }
     }
-
-    // Function to clear the string manually, only use it in special cases as debug display already does that
+	/// Function to clear debug string and will also add a warning that it was cleared manually.
     void clearDebug()
     {
         debugString = "";
         warningDebugMessage("Debug cleared manually. Keep in mind that output function already does that.");
     }
+	/// Test function to demonstrate the usage of the debugging functions
+	/// and to to provide a centralized system for looking if the debugging system is working. 
+    /// This function doesnt take params.
     void testDebug()
     {
-        linearDebugMessage("Test debug message", false); // Call the linear Debug message function to test the library
-        loopDebugMessage("Test loop debug message", false); // Call the loop Debug message function to test the library
-        infoDebugMessage("Test info debug message"); // Call the info Debug message function to test the library
-        warningDebugMessage("Test warning debug message"); // Call the warning Debug message function to test the library
-        paramOutput(); // Call the parameter output function to display the parameters
+        linearDebugMessage("Test debug message", false); 
+        loopDebugMessage("Test loop debug message", false); 
+        infoDebugMessage("Test info debug message"); 
+        warningDebugMessage("Test warning debug message"); 
+        paramOutput(); 
     }
 } // namespace BDL
 
