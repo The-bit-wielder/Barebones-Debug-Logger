@@ -8,19 +8,19 @@
 #include <fstream>
 #include <cstdlib>
 
-namespace BDL // Namespace for the library
+namespace BDL
 {
 
-    std::string debugString;                 // String for storing Debug errors
-    std::string loopBuffer = "";             // String for storing loop errors
-    std::string logName;                     // String for storing the log file name
-    bool debugErrorDisplay = false;          // Flag for error displayed
-    bool autoOutputDebug = true;             // Flag for auto display
-    bool fileOutputDebug = false;            // Flag for file output
-    bool enableConsoleOutput = true;         // Flag for console output
-    bool enableFileOutput = false;           // Flag for file output
-    unsigned short debugErrorCount = 0;      // Counter for Debug errors
-    unsigned short debugErrorCountMax = 255; // Set the default max number of debug errors to store
+    std::string debugString;                 
+    std::string loopBuffer = "";             
+    std::string logName;                     
+    bool debugErrorDisplay = false;          
+    bool autoOutputDebug = true;             
+    bool fileOutputDebug = false;            
+    bool enableConsoleOutput = true;         
+    bool enableFileOutput = false;           
+    unsigned short debugErrorCount = 0;      
+    unsigned short debugErrorCountMax = 255; 
 
     void appendToGlobalString(std::string errorMessage) // Debug buffer function for storing Debug errors (don't use it)
     {
