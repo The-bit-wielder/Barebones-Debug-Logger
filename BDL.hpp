@@ -1,4 +1,5 @@
 #ifndef BDL
+#define BDL
 
 #include <iostream>
 #include <string>
@@ -57,8 +58,8 @@ namespace BDL
 		}
 		if (customFormatEnabled && customFormat.empty() || customFormatEnabled && customFormat.find("%") == std::string::npos)
 		{
-			customFormat = "[%Y-%m-%d %H:%M:%S] [%L] [%M]";
-			linearDebugLog("Custom format enabled ,but no placeholders found , defaulting to [%Y-%m-%d %H:%M:%S] [%L] [%M]", 0, false);
+			customFormatEnabled = false;
+			linearDebugLog("Custom format enabled ,but no placeholders found , defaulting to standard formatting", 0, false);
 		}
 		if (customFormatEnabled)
 		{
@@ -74,7 +75,7 @@ namespace BDL
 	/// @param autoOutputInterval The interval to output the log file (default is 1024)
 	/// @param logFile The path to the log file (default is "log.txt")
 	/// @param outputAtExit Whether to output the log at exit (default is false)
-	/// @param customFormatEnable Whether to enable custom format (default is false)
+	/// @param customFormatEnable Whether to enable custom format (default is false) (WIP - not fully implemented)
 	/// @param customFormat The custom format to use (default is [timestamp] [level] [message])
 	/// @param customFormat The custom format can be any string with the following placeholders:
 	/// @param customFormat %Y - Year (4 digits)
@@ -85,7 +86,7 @@ namespace BDL
 	/// @param customFormat %S - Second (2 digits)
 	/// @param customFormat %L - Level (0-255-internaly , output will be the name of the level)
 	/// @param customFormat %M - Message (any string)
-	/// @param timeStamps Whether to enable time stamps (default is true)
+	/// @param timeStamps Whether to enable time stamps (default is true) (WIP - not fully implemented)
 
 	void setParams(const bool logFileEnabled,
 				   const bool consoleOutputEnabled,
@@ -136,7 +137,6 @@ namespace BDL
 			{
 				outputLog();
 				autoOutputCounter = 0;
-				globalStringStream.str("");
 			}
 		}
 		globalStringStream << message << "\n";
@@ -159,22 +159,29 @@ namespace BDL
 		}
 		else{
 			int pos = 0;
-			std::stringstream internalFormatString;		
-			pos = customFormat.find("%");
+			std::stringstream internalFormatString;	
+			std::string internalFormat = customFormat;	
+			pos = internalFormat.find("%");
+			
+			// Get current time
+			auto now = std::chrono::system_clock::now();
+			std::time_t currentTime = std::chrono::system_clock::to_time_t(now);
+			std::tm* localTime = std::localtime(&currentTime);
+			
 			while(pos != std::string::npos){
-				if(customFormat[pos] == '%'){
-					switch(customFormat[pos + 1]){
+				if(internalFormat[pos] == '%'){
+					switch(internalFormat[pos + 1]){
 						case 'Y':
-							internalFormatString << std::chrono::system_clock::now().time_since_epoch().count();
+							internalFormatString << std::setfill('0') << std::setw(4) << (localTime->tm_year + 1900);
 							break;
 						case 'm':
-							internalFormatString << std::chrono::system_clock::now().time_since_epoch().count() % 100;
+							internalFormatString << std::setfill('0') << std::setw(2) << (localTime->tm_mon + 1);
 							break;
 						case 'd':
-							internalFormatString << std::chrono::system_clock::now().time_since_epoch().count() % 100;
+							internalFormatString << std::setfill('0') << std::setw(2) << localTime->tm_mday;
 							break;
 						case 'H':
-							internalFormatString << std::chrono::system_clock::now().time_since_epoch().count() % 100;
+							internalFormatString << std::setfill('0') << std::setw(2) << localTime->tm_hour;
 							break;
 						case 'M':
 							internalFormatString << message;
@@ -183,14 +190,14 @@ namespace BDL
 							internalFormatString << debugLevels[levelID];
 							break;
 						default:
-							internalFormatString << customFormat[pos + 1];
+							internalFormatString << internalFormat[pos + 1];
 							break;
 					}
-					customFormat = customFormat.substr(pos + 2);
-					pos = customFormat.find("%");
+					internalFormat = internalFormat.substr(pos + 2);
+					pos = internalFormat.find("%");
 				}
 			}
-			internalFormatString << customFormat.substr(0, pos);
+			internalFormat = internalFormat.substr(0, pos);
 			globalStringFunc(internalFormatString.str() + message);
 			if (isFatal) exit(levelID);	
 		}
@@ -235,6 +242,8 @@ namespace BDL
 	/// @brief This function is automatically called when the program ends if the outputAtExit flag is set to true
 	/// @brief This function is also automatically called when the autoOutputEnabled flag is set to true
 	/// @brief This function by default outputs to the console
+	/// @brief This function is also automatically called when the loopStringLimit is reached
+	/// @brief If no output is enabled it will only clear the string stream
 
 	void outputLog()
 	{
@@ -242,22 +251,20 @@ namespace BDL
 		if (logFileStream.is_open() && logFileEnabled)
 		{
 			logFileStream << globalStringStream.str();
-			globalStringStream.str("");
 		}
 		else
 		{
-			linearDebugLog("File stream error , defaulting to console", 1, false);
+			linearDebugLog("File stream error , disabling file output", 1, false);
 			logFileEnabled = false;
-			consoleOutputEnabled = true;
 		}
 		if (consoleOutputEnabled)
 		{
 			if (!firstOutputConsole)
 				std::cerr << "All new logged messages since last call\n";
 			std::cerr << globalStringStream.str();
-			globalStringStream.str("");
 			firstOutputConsole = false;
 		}
+		globalStringStream.str("");
 	}
 
 	/// @brief Debug System Test Function to test the BDL logging system
