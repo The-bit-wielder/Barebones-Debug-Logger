@@ -12,15 +12,6 @@ BDL (Barebones Debug Logger) is a lightweight and thread-safe C++ logging librar
 ## Installation
 BDL is a header-only library. Simply include the BDL.hpp file in your project.
 ```CPP
-C++
-
-#include "BDL.hpp"
-
-// Your code here
-Usage
-Here's a basic example of how to use BDL:
-
-```CPP
 
 #include "BDL.hpp"
 
