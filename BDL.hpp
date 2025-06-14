@@ -1,11 +1,15 @@
 #ifndef BDL
+#define BDL
 
 #include <iostream>
 #include <string>
+#include <sstream>
 #include <vector>
 #include <fstream>
 #include <cstdlib>
 #include <unordered_set>
+#include <chrono>
+#include <iomanip>
 
 namespace BDL
 {
@@ -18,21 +22,24 @@ namespace BDL
 	bool firstOutputToFile = true;
 	bool outputAtExit = false;
 	bool outputAtExitEnabled = false;
+	bool customFormatEnabled = false;
 	short int autoOutputInterval = 1024;
 	short int autoOutputCounter = 0;
 	unsigned short int loopStringLimit = 1024;
 	std::string logFile;
-	std::string globalString;
+	std::stringstream globalStringStream;
 	std::unordered_set<std::string> loopString;
 	std::vector<std::string> debugLevels;
 	std::ofstream logFileStream;
+	std::string customFormat;
+	bool timeStamps = true;
 
 	/// @brief Initialize the BDL logging system
 	void initialize()
 	{
 		if (!initialized)
 		{
-			globalString = "Beginning of log\n";
+			globalStringStream << "Beginning of log\n";
 			debugLevels.resize(256);  // Ensure space for all possible levels
 			debugLevels[0] = "[Debug]";
 			debugLevels[1] = "[Info]";
@@ -49,21 +56,47 @@ namespace BDL
 		if (!logFileEnabled && logFileStream.is_open()){
 			logFileStream.close();
 		}
+		if (customFormatEnabled && customFormat.empty() || customFormatEnabled && customFormat.find("%") == std::string::npos)
+		{
+			customFormatEnabled = false;
+			linearDebugLog("Custom format enabled ,but no placeholders found , defaulting to standard formatting", 0, false);
+		}
+		if (customFormatEnabled)
+		{
+			linearDebugLog("Custom format enabled , there may be a slight performance impact due to the search for placeholders", 0, false);
+		}
 	}
 
 	/// @brief Set the parameters for the BDL logging system , also initializes the system if it is not already initialized
+	/// @brief To set specific parameters withouth the call of the function , call the BDL::<paramName> = <value>
 	/// @param logFileEnabled Whether to enable logging to a file (default is false)
 	/// @param consoleOutputEnabled Whether to enable console output (default is true)
 	/// @param autoOutputEnabled Whether to enable automatic output (default is false)
 	/// @param autoOutputInterval The interval to output the log file (default is 1024)
 	/// @param logFile The path to the log file (default is "log.txt")
+	/// @param outputAtExit Whether to output the log at exit (default is false)
+	/// @param customFormatEnable Whether to enable custom format (default is false) (WIP - not fully implemented)
+	/// @param customFormat The custom format to use (default is [timestamp] [level] [message])
+	/// @param customFormat The custom format can be any string with the following placeholders:
+	/// @param customFormat %Y - Year (4 digits)
+	/// @param customFormat %m - Month (2 digits)
+	/// @param customFormat %d - Day (2 digits)
+	/// @param customFormat %H - Hour (2 digits)
+	/// @param customFormat %M - Minute (2 digits)
+	/// @param customFormat %S - Second (2 digits)
+	/// @param customFormat %L - Level (0-255-internaly , output will be the name of the level)
+	/// @param customFormat %M - Message (any string)
+	/// @param timeStamps Whether to enable time stamps (default is true) (WIP - not fully implemented)
 
 	void setParams(const bool logFileEnabled,
 				   const bool consoleOutputEnabled,
 				   const bool autoOutputEnabled,
 				   const short int &autoOutputInterval,
 				   const std::string &logFile,
-				   const bool outputAtExit)
+				   const bool outputAtExit,
+				   const bool customFormatEnable,
+				   const std::string &customFormat,
+				   const bool timeStamps)
 	{
 		BDL::logFileEnabled = logFileEnabled;
 		BDL::consoleOutputEnabled = consoleOutputEnabled;
@@ -71,6 +104,9 @@ namespace BDL
 		BDL::autoOutputInterval = autoOutputInterval;
 		BDL::logFile = (logFile != "") ? logFile : "log.txt";
 		BDL::outputAtExit = outputAtExit;
+		BDL::customFormatEnabled = customFormatEnable;
+		BDL::customFormat = customFormat;
+		BDL::timeStamps = timeStamps;
 		BDL::initialize();
 	}
 
@@ -83,15 +119,17 @@ namespace BDL
 		std::cout << "Auto Output Enabled: " << autoOutputEnabled << std::endl;
 		std::cout << "Auto Output Interval: " << autoOutputInterval << std::endl;
 		std::cout << "Log File: " << logFile << std::endl;
+		std::cout << "Output At Exit: " << outputAtExit << std::endl;
+		std::cout << "Custom Format Enabled: " << customFormatEnabled << std::endl;
+		std::cout << "Custom Format: " << customFormat << std::endl;
 	}
 
 	/// @brief Internal function to append a message to the global string (avoid using this function directly)
 	/// @param message The message to append
 
-	void globalStringFunc(std::string &message)
+	void globalStringFunc(const std::string &message)
 	{
 		if (!initialized) initialize();
-		message.append("\n");
 		if (autoOutputEnabled)
 		{
 			autoOutputCounter++;
@@ -99,10 +137,9 @@ namespace BDL
 			{
 				outputLog();
 				autoOutputCounter = 0;
-				globalString = "";
 			}
 		}
-		globalString.append(message);
+		globalStringStream << message << "\n";
 	}
 
 	/// @brief Linear Debug Log Function to handle messages based on the level ID
@@ -113,13 +150,56 @@ namespace BDL
 	void linearDebugLog(const std::string &message, const char levelID, bool isFatal)
 	{
 		std::string internalMessage;
-		internalMessage = (debugLevels[levelID] != "") ? debugLevels[levelID] : "[Unknown]:";
-		internalMessage.append(message);
-		globalStringFunc(internalMessage);
-		if (isFatal)
-		{
-			outputLog();
-			exit(levelID);
+		if(!customFormatEnabled){
+			internalMessage = std::chrono::system_clock::now().time_since_epoch().count();
+			internalMessage.append(debugLevels[levelID]);
+			internalMessage.append(message);
+			globalStringFunc(internalMessage);
+			if (isFatal) exit(levelID);	
+		}
+		else{
+			int pos = 0;
+			std::stringstream internalFormatString;	
+			std::string internalFormat = customFormat;	
+			pos = internalFormat.find("%");
+			
+			// Get current time
+			auto now = std::chrono::system_clock::now();
+			std::time_t currentTime = std::chrono::system_clock::to_time_t(now);
+			std::tm* localTime = std::localtime(&currentTime);
+			
+			while(pos != std::string::npos){
+				if(internalFormat[pos] == '%'){
+					switch(internalFormat[pos + 1]){
+						case 'Y':
+							internalFormatString << std::setfill('0') << std::setw(4) << (localTime->tm_year + 1900);
+							break;
+						case 'm':
+							internalFormatString << std::setfill('0') << std::setw(2) << (localTime->tm_mon + 1);
+							break;
+						case 'd':
+							internalFormatString << std::setfill('0') << std::setw(2) << localTime->tm_mday;
+							break;
+						case 'H':
+							internalFormatString << std::setfill('0') << std::setw(2) << localTime->tm_hour;
+							break;
+						case 'M':
+							internalFormatString << message;
+							break;
+						case 'L':	
+							internalFormatString << debugLevels[levelID];
+							break;
+						default:
+							internalFormatString << internalFormat[pos + 1];
+							break;
+					}
+					internalFormat = internalFormat.substr(pos + 2);
+					pos = internalFormat.find("%");
+				}
+			}
+			internalFormat = internalFormat.substr(0, pos);
+			globalStringFunc(internalFormatString.str() + message);
+			if (isFatal) exit(levelID);	
 		}
 	}
 
@@ -134,7 +214,7 @@ namespace BDL
 	{
 		if (loopString.empty() || loopString.find(message) == loopString.end()){
 			loopString.insert(message);
-			linearDebugLog("[Loop]" + message, levelID, isFatal);
+			linearDebugLog("[Loop]:" + message, levelID, isFatal);
 		}
 		if (loopString.size() >= loopStringLimit)
 		{
@@ -162,29 +242,29 @@ namespace BDL
 	/// @brief This function is automatically called when the program ends if the outputAtExit flag is set to true
 	/// @brief This function is also automatically called when the autoOutputEnabled flag is set to true
 	/// @brief This function by default outputs to the console
+	/// @brief This function is also automatically called when the loopStringLimit is reached
+	/// @brief If no output is enabled it will only clear the string stream
 
 	void outputLog()
 	{
 
 		if (logFileStream.is_open() && logFileEnabled)
 		{
-			logFileStream << globalString;
-			globalString = "";
+			logFileStream << globalStringStream.str();
 		}
 		else
 		{
-			linearDebugLog("File stream error , defaulting to console", 1, false);
+			linearDebugLog("File stream error , disabling file output", 1, false);
 			logFileEnabled = false;
-			consoleOutputEnabled = true;
 		}
 		if (consoleOutputEnabled)
 		{
 			if (!firstOutputConsole)
 				std::cerr << "All new logged messages since last call\n";
-			std::cerr << globalString;
-			globalString = "";
+			std::cerr << globalStringStream.str();
 			firstOutputConsole = false;
 		}
+		globalStringStream.str("");
 	}
 
 	/// @brief Debug System Test Function to test the BDL logging system
