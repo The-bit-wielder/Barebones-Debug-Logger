@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include <string>
-#include <vector>
+#include <mutex>
 #include <fstream>
 #include <cstdlib>
 #include <unordered_set>
@@ -11,11 +11,12 @@
 
 class BDL {
 	private:
+		std::mutex mtx; 
 		std::string fName;
 		std::string debugLevel;
 		std::stringstream mainBuffer;
 		std::unordered_set<std::string> loopCheckBuffer;
-		short configFlags = 27;
+		std::atomic<short> configFlags = 27;
 			// Default configuration flags: auto output, file output, console output, enable exit cleanup
 			// 0b00011101 = 27 in decimal
 			// 1st bit: auto output enabled
@@ -25,8 +26,8 @@ class BDL {
 			// 5th bit: loop check enabled 
 			);
 		short looplimit = 1024;
-		short autoOutputInterval = 1024;
-		short autoOutputCounter = 0;
+		std::atomic<short> autoOutputInterval = 1024;
+		std::atomic<short> autoOutputCounter = 0;
 		bool wasInitialized = false;
 		//Macros for configuration flags
 #define BDL_C_FLAG_AUTO_OUTPUT 0x01
@@ -35,6 +36,23 @@ class BDL {
 #define BDL_C_FLAG_ENABLE_EXIT_CLEANUP 0x08
 #define BDL_C_FLAG_LOOP_CHECK 0x10
 		//Macros for runtime flags
+		void debugOutputInternal() {
+			if ((configFlags.load(std::memory_order_relaxed) & BDL_C_FLAG_CONSOLE_OUTPUT)) {
+				std::cerr << mainBuffer.str();
+			}
+			if ((configFlags.load(std::memory_order_relaxed) & BDL_C_FLAG_FILE_OUTPUT)) {
+				static std::ofstream outFile(fName, std::ios::app);
+				if (outFile) {
+					outFile << mainBuffer.str();
+				}
+				else {
+					std::cerr << "Error: File write failed. Disabling file output.\n";
+					configFlags.fetch_and(~BDL_C_FLAG_FILE_OUTPUT, std::memory_order_relaxed);
+				}
+			}
+			mainBuffer.str("");
+			autoOutputCounter = 0;
+		}
 	public:
 		void setFilePath(const std::string& fileName) {
 			fName = fileName;
@@ -104,45 +122,25 @@ class BDL {
 			}
 		}
 		void linearDebugMessage(std::string message) {
+			std::lock_guard<std::mutex> lock(mtx); // Lock held for entire function
 			if (!wasInitialized) {
-				initialize(); // Ensure initialization if not done yet
+				initialize();
 				linearDebugMessage("BDL not initialized. Initializing now with default configuration.");
 			}
-			if ((configFlags & BDL_C_FLAG_LOOP_CHECK) == 1) {
-				if (loopCheckBuffer.find(message) == loopCheckBuffer.end()) {
-					loopCheckBuffer.insert(message);
-					mainBuffer << debugLevel << message << std::endl;
-				}
-			}
-			else
-			{
+			if ((configFlags & BDL_C_FLAG_LOOP_CHECK) && !loopCheckBuffer.count(message)) {
+				loopCheckBuffer.insert(message);
 				mainBuffer << debugLevel << message << std::endl;
 			}
-			if ((configFlags & BDL_C_FLAG_AUTO_OUTPUT) == 1) {
-				autoOutputCounter++;
-				if (autoOutputCounter >= autoOutputInterval) {}
-				debugOutput;
+			else if (!(configFlags & BDL_C_FLAG_LOOP_CHECK)) {
+				mainBuffer << debugLevel << message << std::endl;
 			}
+			if ((configFlags & BDL_C_FLAG_AUTO_OUTPUT) && ++autoOutputCounter >= autoOutputInterval) {
+				debugOutputInternal(); // Private helper (assumes lock is held)
 			}
+		}
 		void debugOutput() {
-			if ((configFlags & BDL_C_FLAG_CONSOLE_OUTPUT) == 1) {
-				std::cerr << mainBuffer.str(); // Output to console
-			}
-			if ((configFlags & BDL_C_FLAG_FILE_OUTPUT) == 1) {
-				std::ofstream outFile(fName);
-				if (outFile.is_open()) {
-					outFile << mainBuffer.str(); // Output to file
-					outFile.close();
-				} else {
-					std::cerr << "Error: Unable to open file " << fName << " for writing." << std::endl;
-					configFlags &= ~BDL_C_FLAG_FILE_OUTPUT; // Disable file output if file cannot be opened
-				}
-			}
-			mainBuffer.str(""); // Clear the main buffer after output
-			if ((configFlags & BDL_C_FLAG_AUTO_OUTPUT) == 1) {
-				autoOutputCounter = 0; // Reset auto output counter
-            if ((configFlags & BDL_C_FLAG_AUTO_OUTPUT) == 1) {
-			}
+			std::lock_guard<std::mutex> lock(mtx);
+			debugOutputInternal();
 		}
 		void cleanup() {
 				mainBuffer.str(""); // Clear the main buffer
