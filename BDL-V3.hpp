@@ -1,5 +1,5 @@
 #pragma once
-
+#include <sstream>
 #include <iostream>
 #include <string>
 #include <mutex>
@@ -18,7 +18,7 @@ class BDL {
 private:
     std::mutex mtx;
     std::string fName;
-    std::string debugLevel;
+    std::string logLevel;
     std::stringstream mainBuffer;
     std::unordered_set<std::string> loopCheckBuffer;
     std::atomic<short> configFlags = 27;
@@ -48,8 +48,8 @@ public:
     void setFilePath(const std::string& fileName) {
         fName = fileName;
     }
-    void setDebugLevel(const std::string& level) {
-        debugLevel = '[' + level + ']';
+    void setLogLevel(const std::string& level) {
+        logLevel = '[' + level + ']';
     }
     void setLoopLimit(short limit) {
         looplimit = limit;
@@ -91,7 +91,7 @@ public:
     }
     void initialize() {
         wasInitialized = true;
-        if (debugLevel.empty()) {
+        if (logLevel.empty()) {
             std::cerr << "Error: Debug level not set." << std::endl;
             exit(EXIT_FAILURE);
         }
@@ -114,16 +114,21 @@ public:
         }
         if ((configFlags & BDL_C_FLAG_LOOP_CHECK) && !loopCheckBuffer.count(message)) {
             loopCheckBuffer.insert(message);
-            mainBuffer << debugLevel << message << std::endl;
+            mainBuffer << logLevel << message << std::endl;
         }
         else if (!(configFlags & BDL_C_FLAG_LOOP_CHECK)) {
-            mainBuffer << debugLevel << message << std::endl;
+            mainBuffer << logLevel << message << std::endl;
         }
         if ((configFlags & BDL_C_FLAG_AUTO_OUTPUT) && ++autoOutputCounter >= autoOutputInterval) {
             debugOutputInternal(); // Private helper (assumes lock is held)
         }
     }
-    void debugOutput() {
+    void cleanup() {
+        mainBuffer.str(""); // Clear the main buffer
+        loopCheckBuffer.clear(); // Clear the loop check buffer
+        autoOutputCounter = 0; // Reset auto output counter
+    }
+    void logOutput() {
         std::lock_guard<std::mutex> lock(mtx);
         debugOutputInternal();
     }
