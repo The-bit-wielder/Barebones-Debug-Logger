@@ -21,7 +21,7 @@ int main() {
     // Initialize the logger. This is crucial before logging messages.
     // If not called explicitly, it will be called on the first log message
     // but it's good practice to initialize upfront.
-    logger.setDebugLevel("INFO"); // Set a debug level string, e.g., "[INFO]"
+    logger.setLogLevel("INFO"); // Set a debug level string, e.g., "[INFO]"
     logger.initialize();
 
     // Enable console output (it's enabled by default, but shown for clarity)
