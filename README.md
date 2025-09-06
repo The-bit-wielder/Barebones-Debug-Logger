@@ -28,7 +28,7 @@ int main() {
     logger.setConsoleOutput(true);
 
     // Log a simple message
-    logger.linearDebugMessage("Application started successfully.");
+    logger.logMessage("Application started successfully.");
 
     // You can change debug levels on the fly
     logger.setDebugLevel("WARN");
@@ -40,7 +40,7 @@ int main() {
     // Disable auto output and loop check for specific scenarios
     logger.setAutoOutput(false);
     logger.setLoopCheck(false);
-    logger.linearDebugMessage("Auto output and loop check disabled temporarily.");
+    logger.logMessage("Auto output and loop check disabled temporarily.");
     logger.debugOutput(); // Manual flush needed now
 
     logger.cleanup();//To ensure cleared buffers
@@ -66,19 +66,19 @@ int main() {
 
     // Disable console output
     logger.setConsoleOutput(false);
-    logger.linearDebugMessage("Console output is now disabled."); // This message will only go to the file
+    logger.logMessage("Console output is now disabled."); // This message will only go to the file
 
     // Disable duplicate message filtering (loop check)
     logger.setLoopCheck(false);
-    logger.linearDebugMessage("This message will appear multiple times if logged consecutively.");
-    logger.linearDebugMessage("This message will appear multiple times if logged consecutively.");
+    logger.logMessage("This message will appear multiple times if logged consecutively.");
+    logger.logMessage("This message will appear multiple times if logged consecutively.");
     logger.debugOutput();
 
     // Configure auto output interval
     logger.setAutoOutput(true); // Ensure auto output is enabled
     logger.setAutoOutputInterval(5); // Flush logs after every 5 messages
     for (int i = 0; i < 7; ++i) {
-        logger.linearDebugMessage("Message " + std::to_string(i));
+        logger.logMessage("Message " + std::to_string(i));
     }
     // The first 5 messages will be flushed, then the next 2 will remain in buffer until another 3 messages or manual flush.
 
