@@ -85,11 +85,6 @@ int main() {
     // Manually flush pending logs
     logger.debugOutput();
 
-    // Enable exit cleanup (note: atexit registration needs to be handled carefully with classes)
-    // The current implementation of atexit(cleanup) won't work directly with member functions.
-    // Consider a singleton pattern for BDL if you want automatic cleanup on exit.
-    // logger.setEnableCleanup(true); // This flag can be set, but atexit needs manual setup for object instances.
-
     return 0;
 }
 ```
