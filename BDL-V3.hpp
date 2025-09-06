@@ -123,9 +123,15 @@ public:
             debugOutputInternal(); // Private helper (assumes lock is held)
         }
     }
+    void cleanup() {
+        mainBuffer.str(""); // Clear the main buffer
+        loopCheckBuffer.clear(); // Clear the loop check buffer
+        autoOutputCounter = 0; // Reset auto output counter
+    }
     void logOutput() {
         std::lock_guard<std::mutex> lock(mtx);
         debugOutputInternal();
     }
 
 }; // Ensure the class definition ends properly
+
