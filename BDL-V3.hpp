@@ -106,11 +106,11 @@ public:
             }
         }
     }
-    void linearDebugMessage(std::string message) {
+    void logMessage(std::string message) {
         std::lock_guard<std::mutex> lock(mtx); // Lock held for entire function
         if (!wasInitialized) {
             initialize();
-            linearDebugMessage("BDL not initialized. Initializing now with default configuration.");
+            logMessage("BDL not initialized. Initializing now with default configuration.");
         }
         if ((configFlags & BDL_C_FLAG_LOOP_CHECK) && !loopCheckBuffer.count(message)) {
             loopCheckBuffer.insert(message);
@@ -134,4 +134,5 @@ public:
     }
 
 }; // Ensure the class definition ends properly
+
 
