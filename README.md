@@ -16,7 +16,7 @@ BDL is a header-only library. Simply include the BDL.hpp file in your project.
 #include "BDL.hpp"
 
 int main() {
-    BDL logger;
+    BDL::loggerConstructor logger;
 
     // Initialize the logger. This is crucial before logging messages.
     // If not called explicitly, it will be called on the first log message
@@ -54,7 +54,7 @@ BDL provides several methods to configure its behavior:
 #include "BDL.hpp"
 
 int main() {
-    BDL logger;
+    BDL::loggerConstructor logger;
     logger.setDebugLevel("DEBUG");
     logger.initialize(); // Always initialize after setting initial configurations
 
