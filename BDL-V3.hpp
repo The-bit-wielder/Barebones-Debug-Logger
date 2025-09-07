@@ -127,8 +127,4 @@ public:
         std::lock_guard<std::mutex> lock(mtx);
         debugOutputInternal();
     }
-
 }; // Ensure the class definition ends properly
-
-
-
