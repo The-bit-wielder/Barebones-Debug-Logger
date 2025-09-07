@@ -7,6 +7,7 @@
 #include <cstdlib>
 #include <unordered_set>
 
+namespace BDL { // Ensure the namespace is defined
 
 //Macros for configuration flags
 #define BDL_C_FLAG_AUTO_OUTPUT 0x01
@@ -14,7 +15,7 @@
 #define BDL_C_FLAG_CONSOLE_OUTPUT 0x04
 #define BDL_C_FLAG_LOOP_CHECK 0x10
 
-class BDL {
+class loggerConstructor {
 private:
     std::mutex mtx;
     std::string fName;
@@ -128,3 +129,4 @@ public:
         debugOutputInternal();
     }
 }; // Ensure the class definition ends properly
+} // Ensure the namespace ends properly
