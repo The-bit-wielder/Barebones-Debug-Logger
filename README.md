@@ -43,7 +43,6 @@ int main() {
     logger.logMessage("Auto output and loop check disabled temporarily.");
     logger.debugOutput(); // Manual flush needed now
 
-    logger.cleanup();//To ensure cleared buffers
     return 0;
 }
 ```
