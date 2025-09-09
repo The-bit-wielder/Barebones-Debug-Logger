@@ -5,7 +5,7 @@ BDL (Barebones Debug Logger) is a lightweight and thread-safe C++ logging librar
 🚀 Thread-safe: All logging operations are protected by a mutex, ensuring safe concurrent access from multiple threads.</br>
 📝 Console and File Logging: Output logs directly to the console (std::cerr) and/or to a specified file.</br>
 ⚡ Efficient: Designed for minimal overhead, making it suitable for non-performance-critical debugging paths.</br>
-🧩 Zero Dependencies: Relies solely on the C++20 standard library.</br>
+🧩 Zero Dependencies: Relies solely on the C++14 (Fully Compatible with C++ 20/23) standard library.</br>
 🔧 Hackable: Contained within a single header file, making it easy to understand, modify, and integrate into your projects.</br>
 🔁 Loop Check: An optional feature to prevent logging the same message repeatedly, useful for avoiding log spam in loops.</br>
 ⏰ Auto Output: Automatically flushes logs after a configurable number of messages. </br>
